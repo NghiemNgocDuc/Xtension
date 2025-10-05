@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <title> Instant Voice Cloner</title>
+ <style>
+   body {
+     font-family: Arial, sans-serif;
+     text-align: center;
+     padding: 50px;
+   }
+
+
+   h1 {
+     color: #333;
+   }
+
+
+   input[type="text"] {
+     padding: 10px;
+     width: 250px;
+     margin-bottom: 15px;
+     border-radius: 5px;
+     border: 1px solid #ccc;
+   }
+
+
+   button {
+     padding: 10px 15px;
+     border: none;
+     border-radius: 5px;
+     margin: 5px;
+     font-weight: bold;
+     cursor: pointer;
+   }
+
+
+   #start-btn {
+     background-color: #4CAF50;
+     color: white;
+   }
+
+
+   #stop-btn {
+     background-color: #888;
+     color: white;
+   }
+
+
+   #set-voice-btn {
+     background-color: #007bff;
+     color: white;
+   }
+
+
+   #current-voice {
+     margin-top: 20px;
+     font-size: 1.1em;
+     color: #222;
+   }
+
+
+   #voice-id-box {
+     margin-top: 20px;
+     font-size: 1em;
+     color: #444;
+   }
+ </style>
+</head>
+
+
+<body>
+ <h1> Instant Voice Cloner</h1>
+ <p>Press record, speak for a few seconds, then stop and upload.</p>
+
+
+ <input type="text" id="voiceName" placeholder="Enter new voice name" />
+ <br />
+ <button id="start-btn">Start Recording</button>
+ <button id="stop-btn">Stop Recording</button>
+
+
+ <div id="voice-id-box">
+   <p><strong>Or paste an existing Voice ID:</strong></p>
+   <input type="text" id="voiceIdInput" placeholder="Paste your Voice ID here" />
+   <button id="set-voice-btn">Set Voice ID</button>
+   <p id="current-voice"> Current voice: <span id="activeVoice">Current voice</span></p>
+ </div>
+
+
+ <script>
+   let mediaRecorder;
+   let audioChunks = [];
+   let activeVoiceId = "Current Voice"; // default voice
+
+
+   const startBtn = document.getElementById("start-btn");
+   const stopBtn = document.getElementById("stop-btn");
+   const setVoiceBtn = document.getElementById("set-voice-btn");
+   const activeVoiceSpan = document.getElementById("activeVoice");
+
+
+   // 🎤 Voice ID Setter
+   setVoiceBtn.addEventListener("click", () => {
+     const newId = document.getElementById("voiceIdInput").value.trim();
+     if (newId) {
+       activeVoiceId = newId;
+       activeVoiceSpan.textContent = activeVoiceId;
+       alert(" Voice ID updated!");
+     } else {
+       alert(" Please paste a valid Voice ID.");
+     }
+   });
+
+
+   // 🎧 Recording Logic
+   startBtn.addEventListener("click", async () => {
+     audioChunks = [];
+     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+     mediaRecorder = new MediaRecorder(stream);
+
+
+     mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+
+     mediaRecorder.onstop = async () => {
+       const blob = new Blob(audioChunks, { type: "audio/webm" });
+       const formData = new FormData();
+       formData.append("audio", blob);
+       formData.append("name", document.getElementById("voiceName").value || "InstantVoice");
+
+
+       const response = await fetch("/clone", { method: "POST", body: formData });
+       const result = await response.json();
+
+
+       if (result.voice_id) {
+         alert(" New voice cloned! ID copied below.");
+         document.getElementById("voiceIdInput").value = result.voice_id;
+         activeVoiceId = result.voice_id;
+         activeVoiceSpan.textContent = activeVoiceId;
+       } else {
+         alert(" " + (result.error || "Voice cloning failed."));
+       }
+     };
+
+
+     mediaRecorder.start();
+     startBtn.disabled = true;
+     stopBtn.disabled = false;
+   });
+
+
+   stopBtn.addEventListener("click", () => {
+     if (mediaRecorder && mediaRecorder.state !== "inactive") {
+       mediaRecorder.stop();
+       startBtn.disabled = false;
+       stopBtn.disabled = true;
+     }
+   });
+ </script>
+</body>
+</html>

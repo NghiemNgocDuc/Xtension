@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Voice Game Controller Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #222;
+      color: #eee;
+      text-align: center;
+      padding: 50px;
+    }
+    #log {
+      margin-top: 30px;
+      font-size: 18px;
+      background: #111;
+      padding: 20px;
+      border-radius: 10px;
+      min-height: 100px;
+    }
+    .arrow {
+      font-size: 50px;
+      margin: 10px;
+      display: inline-block;
+      opacity: 0.3;
+      transition: opacity 0.2s;
+    }
+    .active {
+      opacity: 1;
+      color: lime;
+    }
+  </style>
+</head>
+<body>
+  <h1> Voice Game Controller Test</h1>
+  <p>Say <b>up, down, left, right</b> — they will trigger arrow keys here.</p>
+
+  <div>
+    <div id="up" class="arrow">⬆️</div><br>
+    <div id="left" class="arrow">⬅️</div>
+    <div id="right" class="arrow">➡️</div><br>
+    <div id="down" class="arrow">⬇️</div>
+  </div>
+
+  <div id="log">Waiting for key events...</div>
+
+  <script>
+    const log = document.getElementById("log");
+
+    function flashArrow(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add("active");
+      setTimeout(() => el.classList.remove("active"), 300);
+    }
+
+    document.addEventListener("keydown", e => {
+      log.innerText = `Key pressed: ${e.key}`;
+      if (e.key === "ArrowUp") flashArrow("up");
+      if (e.key === "ArrowDown") flashArrow("down");
+      if (e.key === "ArrowLeft") flashArrow("left");
+      if (e.key === "ArrowRight") flashArrow("right");
+    });
+  </script>
+</body>
+</html>

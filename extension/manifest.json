@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Voice Game Controller",
+  "version": "1.0",
+  "description": "Control web games like Subway Surfers using your voice with ElevenLabs TTS/ASR.",
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*/*", "http://*/*"],
+      "js": ["commands.js", "content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ]
+}
